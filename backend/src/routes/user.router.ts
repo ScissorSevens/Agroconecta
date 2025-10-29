@@ -9,15 +9,33 @@ import {
 } from "../controllers/user.controller";
 
 import { verifyFirebaseToken } from "../middlewares/verifyFirebase";
-import { checkRole } from "../middlewares/checkRole"; // middleware opcional
+import { checkRole } from "../middlewares/checkRole";
 
 const router = express.Router();
 
-router.post("/user/createUser", verifyFirebaseToken, createUser);
-router.get("/user/getAllUsers", verifyFirebaseToken, checkRole(["admin"]), getAllUsers);
-router.get("/user/getUserByFirebaseUID/:uid", verifyFirebaseToken, getUserByFirebaseUID);
-router.put("/user/updateUser/:id", verifyFirebaseToken, updateUser);
-router.delete("/user/deleteUser/:id", verifyFirebaseToken, checkRole(["admin"]), deleteUser);
-router.patch("/user/approveOrRejectUser/:id/estado", verifyFirebaseToken, checkRole(["admin"]), approveOrRejectUser);
+/**
+ * Rutas del módulo de usuarios
+ * 
+ * Base: /user
+ * Ejemplo final: /user/create → POST
+ */
+
+// Crear usuario (solo requiere autenticación Firebase)
+router.post("/", verifyFirebaseToken, createUser);
+
+// Obtener todos los usuarios (solo admin)
+router.get("/", verifyFirebaseToken, checkRole(["admin"]), getAllUsers);
+
+// Obtener usuario por UID de Firebase
+router.get("/:uid", verifyFirebaseToken, getUserByFirebaseUID);
+
+// Actualizar usuario por ID (cualquier usuario autenticado puede actualizar su info)
+router.put("/:id", verifyFirebaseToken, updateUser);
+
+// Eliminar usuario (solo admin)
+router.delete("/:id", verifyFirebaseToken, checkRole(["admin"]), deleteUser);
+
+// Aprobar o rechazar usuario (solo admin)
+router.patch("/:id/estado", verifyFirebaseToken, checkRole(["admin"]), approveOrRejectUser);
 
 export default router;

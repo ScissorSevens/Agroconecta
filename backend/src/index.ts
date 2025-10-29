@@ -44,6 +44,3 @@ connectDB()
   .catch((err) => console.error("❌ Error al inicializar Firebase Admin", err));
 
 
-app.listen(port, () => {
-  console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
-});

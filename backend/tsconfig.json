@@ -6,6 +6,7 @@
     "outDir": "./build",
     "rootDir": "./src",
     "skipLibCheck": true,
+     "typeRoots": ["./node_modules/@types", "./src/types"],
     
     /* Module Resolution */
     "moduleResolution": "node",
@@ -29,4 +30,5 @@
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "build"]
+
 }
