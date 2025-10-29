@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node build/index.js"
+    "start": "node build/index.js",
+     "set-role": "tsx src/scripts/setRole.ts"
   },
   "keywords": [],
   "author": "",

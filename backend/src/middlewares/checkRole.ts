@@ -2,23 +2,20 @@ import { Request, Response, NextFunction } from "express";
 import { firebaseAdmin } from "../config/firebase";
 
 /**
- * Middleware para restringir el acceso según el rol del usuario.
- * 
- * @param allowedRoles Lista de roles permitidos (ej: ["admin", "vendedor"])
+ * Middleware para restringir rutas según el rol del usuario.
+ * Ejemplo: checkRole(["admin", "vendedor"])
  */
 export const checkRole = (allowedRoles: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // El token ya fue verificado en verifyFirebase.ts
       const authHeader = req.headers.authorization;
       if (!authHeader?.startsWith("Bearer ")) {
         return res.status(401).json({ message: "Token no proporcionado" });
       }
 
-      const idToken = authHeader.split(" ")[1];
-      const decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken);
+      const token = authHeader.split(" ")[1];
+      const decodedToken = await firebaseAdmin.auth().verifyIdToken(token);
 
-      // Verificamos si el token tiene un rol asignado en custom claims
       const userRole = decodedToken.role;
 
       if (!userRole) {
@@ -29,8 +26,8 @@ export const checkRole = (allowedRoles: string[]) => {
         return res.status(403).json({ message: "Acceso denegado: rol no autorizado" });
       }
 
-      // Guardamos el rol y uid en la request
-      (req as any).user = {
+      // Guardamos los datos del usuario en la request
+      req.user = {
         uid: decodedToken.uid,
         role: userRole,
       };
@@ -42,3 +39,4 @@ export const checkRole = (allowedRoles: string[]) => {
     }
   };
 };
+

@@ -16,8 +16,8 @@ export const verifyFirebaseToken = async (
     const token = authHeader.split(" ")[1];
     const decodedToken = await firebaseAdmin.auth().verifyIdToken(token);
 
-    // Agregamos el UID del usuario al request
-    (req as any).uid = decodedToken.uid;
+    // Guardamos el UID de Firebase en la request
+    req.uid = decodedToken.uid;
 
     next();
   } catch (error) {
@@ -25,3 +25,4 @@ export const verifyFirebaseToken = async (
     res.status(401).json({ message: "Token inválido o expirado" });
   }
 };
+

@@ -1,20 +1,29 @@
 import { Request, Response } from "express";
 import { UserModel } from "../models/user.model";
-import {firebaseAdmin} from "../config/firebase"; // Firebase Admin SDK
+import { firebaseAdmin } from "../config/firebase"; // Firebase Admin SDK
 
+// Crear un nuevo usuario
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const { uid, nombre, correo, rol } = req.body;
+    const { uid, nombre, email, rol, telefono, direccion } = req.body;
 
-    // Evitar duplicados
-    const existingUser = await UserModel.findOne({ firebase_uid: uid });
-    if (existingUser) return res.status(400).json({ message: "El usuario ya existe" });
+    // Verificar duplicados por UID o correo
+    const existingUser = await UserModel.findOne({ $or: [{ uid }, { email }] });
+    if (existingUser) {
+      return res.status(400).json({ message: "El usuario ya existe" });
+    }
 
     const newUser = await UserModel.create({
-      firebase_uid: uid,
+      uid,
       nombre,
-      correo,
+      email,
       rol,
+      telefono,
+      direccion: {
+        departamento: direccion?.departamento || "",
+        ciudad: direccion?.ciudad || "",
+        detalle: direccion?.detalle || "",
+      },
       estado: "pendiente", // hasta que el admin lo apruebe
       fecha_registro: new Date(),
     });
@@ -26,7 +35,7 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-//obtener todos los usuarios admin
+// Obtener todos los usuarios (solo admin)
 export const getAllUsers = async (_req: Request, res: Response) => {
   try {
     const users = await UserModel.find();
@@ -37,12 +46,15 @@ export const getAllUsers = async (_req: Request, res: Response) => {
   }
 };
 
+// Obtener usuario por UID de Firebase
 export const getUserByFirebaseUID = async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;
-    const user = await UserModel.findOne({ firebase_uid: uid });
+    const user = await UserModel.findOne({ uid });
 
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
 
     res.json(user);
   } catch (error) {
@@ -51,11 +63,14 @@ export const getUserByFirebaseUID = async (req: Request, res: Response) => {
   }
 };
 
+// Actualizar usuario por ID de MongoDB
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const updated = await UserModel.findByIdAndUpdate(id, req.body, { new: true });
-    if (!updated) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!updated) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
     res.json(updated);
   } catch (error) {
     console.error("Error actualizando usuario:", error);
@@ -63,15 +78,17 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 };
 
-
+// Eliminar usuario (de MongoDB y Firebase)
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
     const user = await UserModel.findByIdAndDelete(id);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
 
-    // También lo eliminamos de Firebase Auth
+    // Eliminar también en Firebase Auth
     await firebaseAdmin.auth().deleteUser(user.uid);
 
     res.json({ message: "Usuario eliminado correctamente" });
@@ -81,7 +98,7 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-
+// Aprobar o rechazar usuario (solo admin)
 export const approveOrRejectUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
@@ -91,13 +108,11 @@ export const approveOrRejectUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Estado inválido" });
     }
 
-    const updated = await UserModel.findByIdAndUpdate(
-      id,
-      { estado },
-      { new: true }
-    );
+    const updated = await UserModel.findByIdAndUpdate(id, { estado }, { new: true });
 
-    if (!updated) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!updated) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
 
     res.json({ message: `Usuario ${estado} correctamente`, user: updated });
   } catch (error) {
@@ -105,6 +120,3 @@ export const approveOrRejectUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Error al actualizar estado del usuario" });
   }
 };
-
-
-
