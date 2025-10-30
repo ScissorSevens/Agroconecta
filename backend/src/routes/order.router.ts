@@ -4,9 +4,9 @@ import { createOrder, getOrders, getOrderById, updateOrderStatus } from "../cont
 
 const router=express.Router();
 
-router.post("/order/createOrder", createOrder);
-router.get("/order/getOrders", getOrders);
-router.get("/order/getOrderById/:id", getOrderById);
-router.put("/order/updateOrderStatus/:id/status", updateOrderStatus);
+router.post("/", createOrder);
+router.get("/", getOrders);
+router.get("/:id", getOrderById);
+router.put("/:id/status", updateOrderStatus);
 
 export default router;

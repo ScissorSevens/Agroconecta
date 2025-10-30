@@ -1,16 +1,37 @@
 import { firebaseAdmin } from "../config/firebase";
+import { connectDB } from "../config/database"; // asegúrate de importar tu conexión a Mongo
+import { UserModel } from "../models/user.model";
 
 async function setUserRole() {
-  const uid = "EtHF051MO1fSY4xMZ6pzxLqg4I12"; // 👈 UID de tu usuario (del token)
+  const uid = "wToivb4aYugVO5DCLXsxaLAxIHm2"; // 👈 UID del usuario en Firebase
   const role = "admin"; // o "vendedor", "comprador"
 
-  await firebaseAdmin.auth().setCustomUserClaims(uid, { role });
-  console.log(`✅ Rol '${role}' asignado correctamente al usuario ${uid}`);
-}
+  try {
+    // 1️⃣ Conectarse a MongoDB
+    await connectDB();
 
-setUserRole()
-  .then(() => process.exit(0))
-  .catch((err) => {
+    // 2️⃣ Asignar el rol en Firebase Auth
+    await firebaseAdmin.auth().setCustomUserClaims(uid, { role });
+    console.log(`✅ Rol '${role}' asignado correctamente en Firebase al usuario ${uid}`);
+
+    // 3️⃣ Buscar y actualizar el usuario en MongoDB
+    const updatedUser = await UserModel.findOneAndUpdate(
+      { uid },
+      { rol: role, estado: "activo" },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      console.warn(`⚠️ Usuario con UID ${uid} no encontrado en MongoDB.`);
+    } else {
+      console.log(`✅ Usuario actualizado en MongoDB:`, updatedUser);
+    }
+
+    process.exit(0);
+  } catch (err) {
     console.error("❌ Error asignando rol:", err);
     process.exit(1);
-  });
+  }
+}
+
+setUserRole();
