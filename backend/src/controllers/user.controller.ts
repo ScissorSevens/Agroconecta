@@ -24,6 +24,7 @@ export const createUser = async (req: Request, res: Response) => {
         ciudad: direccion?.ciudad || "",
         detalle: direccion?.detalle || "",
       },
+      foto_perfil: "",
       estado: "pendiente", // hasta que el admin lo apruebe
       fecha_registro: new Date(),
     });
