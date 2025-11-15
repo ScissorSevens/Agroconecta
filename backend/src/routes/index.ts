@@ -4,6 +4,7 @@ import orderRouter from "./order.router";
 import productRouter from "./product.router";
 import reviewRouter from "./review.router";
 import userRouter from "./user.router";
+import notificationRouter from "./notification.router"
 
 const router = Router();
 router.get("/", (_, res) => {
@@ -16,5 +17,6 @@ router.use("/order", orderRouter);
 router.use("/product", productRouter);
 router.use("/review", reviewRouter);
 router.use("/user", userRouter);
+router.use("/notification",notificationRouter);
 
 export default router;

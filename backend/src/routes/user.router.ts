@@ -13,14 +13,7 @@ import { checkRole } from "../middlewares/checkRole";
 
 const router = express.Router();
 
-/**
- * Rutas del módulo de usuarios
- * 
- * Base: /user
- * Ejemplo final: /user/create → POST
- */
 
-// Crear usuario (solo requiere autenticación Firebase)
 router.post("/", verifyFirebaseToken, createUser);
 
 // Obtener todos los usuarios (solo admin)
